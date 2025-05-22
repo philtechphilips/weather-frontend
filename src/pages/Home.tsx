@@ -107,8 +107,14 @@ const Home: React.FC = () => {
   };
   return (
     <div className="flex flex-col relative md:h-screen w-full bg-[url('/images/hero-bg.jpg')] bg-cover bg-center md:px-25 py-10 px-5">
-      <div className="z-1">
+      <div className="z-1 flex justify-between items-center">
         <h1 className="text-white text-xl font-semibold">Weather App</h1>
+        <a
+          href="/chat"
+          className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded shadow transition-colors duration-150 text-sm font-medium"
+        >
+          Go to Chat
+        </a>
       </div>
 
       <div className="flex flex-col items-center w-full justify-center h-60 z-10">
