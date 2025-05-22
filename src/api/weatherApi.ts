@@ -1,11 +1,18 @@
 import axios from 'axios';
 
-const API_URL = 'https://wttr.in';
+const API_URL = 'https://api.weatherapi.com/v1';
+const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
 export const fetchWeather = async (location: string) => {
   try {
-    const res = await axios.get(`${API_URL}/${encodeURIComponent(location)}?format=j1`);
-    console.log('Weather data:', res.data);
+    const res = await axios.get(`${API_URL}/current.json`, {
+      params: {
+        key: API_KEY,
+        q: location,
+        aqi: 'no',
+      },
+    });
+    console.log('WeatherAPI data:', res.data);
     return res.data;
   } catch (error) {
     console.error('Error fetching weather:', error);
@@ -18,12 +25,11 @@ export const fetchPopularCitiesWeather = async (cities: string[]) => {
     cities.map(async (city) => {
       try {
         const data = await fetchWeather(city);
-        console.log(`Weather data for ${city}:`, data);
         return {
-          name: city,
-          temp: data?.current_condition?.[0]?.temp_C ?? null,
-          desc: data?.current_condition?.[0]?.weatherDesc[0]?.value ?? null,
-          country: data?.nearest_area?.[0]?.country?.[0]?.value ?? null,
+          name: data.location.name,
+          temp: data.current.temp_c,
+          desc: data.current.condition.text,
+          country: data.location.country,
           error: null,
         };
       } catch (error) {
@@ -40,4 +46,23 @@ export const fetchPopularCitiesWeather = async (cities: string[]) => {
   );
 
   return results;
+};
+
+export const fetchForecast = async (location: string, days: number = 3) => {
+  try {
+    const res = await axios.get(`${API_URL}/forecast.json`, {
+      params: {
+        key: API_KEY,
+        q: location,
+        days,
+        aqi: 'no',
+        alerts: 'no',
+      },
+    });
+    console.log('WeatherAPI forecast data:', res.data);
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching forecast:', error);
+    throw error;
+  }
 };

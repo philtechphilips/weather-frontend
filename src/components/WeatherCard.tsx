@@ -3,6 +3,7 @@ interface WeatherCardProps {
   temp: number;
   desc: string;
   country: string;
+  onClick?: () => void;
 }
 
 const getWeatherIcon = (desc: string) => {
@@ -17,15 +18,15 @@ const getWeatherIcon = (desc: string) => {
   return <i className="ri-weather-line text-4xl text-white" title="Weather" />;
 };
 
-const WeatherCard: React.FC<WeatherCardProps> = ({ name, temp, desc, country }) => {
+const WeatherCard: React.FC<WeatherCardProps> = ({ name, temp, desc, country, onClick }) => {
   return (
-    <div className="bg-black/40 rounded-lg shadow-md p-4 flex flex-col gap-2">
+    <div className="bg-black/40 rounded-lg shadow-md p-4 flex flex-col gap-2 cursor-pointer hover:bg-black/60 transition" onClick={onClick}>
       <h3 className="text-xl text-white mt-2">{name}</h3>
       <p className="text-sm text-white">{country}</p>
-    <div className="flex items-center gap-2">
-         {getWeatherIcon(desc)}
-          <p className="text-white text-2xl">{temp}°C</p>
-    </div>
+      <div className="flex items-center gap-2">
+        {getWeatherIcon(desc)}
+        <p className="text-white text-2xl">{temp}°C</p>
+      </div>
       <p className="text-[#f0f0f0] text-sm capitalize">{desc}</p>
     </div>
   );

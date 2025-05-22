@@ -13,6 +13,10 @@ const POPULAR_CITIES = [
   "Tokyo",
   "Paris",
   "Sydney",
+  "Los Angeles",
+  "Berlin",
+  "Toronto",
+  "Lagos",
   "Ibadan",
   "Cairo",
   "Moscow",
@@ -92,6 +96,7 @@ const Home: React.FC = () => {
                 temp={weather?.temp}
                 desc={weather?.desc}
                 country={weather?.country}
+                onClick={() => navigate(`/weather/${encodeURIComponent(weather?.name)}`)}
               />
             ))
           )}
