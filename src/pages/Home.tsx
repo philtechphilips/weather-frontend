@@ -1,10 +1,10 @@
 // Home page: shows weather for popular cities and search bar
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "remixicon/fonts/remixicon.css";
 import toast, { Toaster } from "react-hot-toast";
 import Input from "../components/Input";
-import { fetchPopularCitiesWeather } from "../api/weatherApi";
+import { fetchPopularCitiesWeather, fetchCitySuggestions } from "../api/weatherApi";
 import WeatherCard from "../components/WeatherCard";
 
 const POPULAR_CITIES = [
@@ -26,7 +26,12 @@ const Home: React.FC = () => {
   const [weatherList, setWeatherList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const debounceTimeout = useRef<number | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -47,6 +52,50 @@ const Home: React.FC = () => {
     };
     fetchData();
   }, []);
+
+  // Autocomplete logic using GeoDB Cities API
+  useEffect(() => {
+    if (search.trim().length === 0) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    setSuggestionLoading(true);
+    debounceTimeout.current = window.setTimeout(async () => {
+      try {
+        const cities = await fetchCitySuggestions(search);
+        setSuggestions(cities);
+        setShowSuggestions(cities.length > 0);
+      } catch (err) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      } finally {
+        setSuggestionLoading(false);
+      }
+    }, 400);
+    
+  }, [search]);
+
+  // Hide suggestions on click outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleSuggestionClick = (city: string) => {
+    setSearch(city);
+    setShowSuggestions(false);
+    navigate(`/weather/${encodeURIComponent(city)}`);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +125,24 @@ const Home: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-[#f3f3f3] rounded shadow-md pl-10 pr-4 py-3 text-gray-900 text-sm placeholder-gray-400 focus:outline-none w-full"
+              autoComplete="off"
             />
+            {showSuggestions && (
+              <ul className="absolute left-0 right-0 mt-1 bg-white rounded shadow-lg z-20 max-h-48 overflow-y-auto">
+                {suggestionLoading && (
+                  <li className="px-4 py-2 text-gray-500 text-sm">Loading...</li>
+                )}
+                {suggestions.map((city) => (
+                  <li
+                    key={city}
+                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-gray-800 text-sm"
+                    onClick={() => handleSuggestionClick(city)}
+                  >
+                    {city}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </form>
       </div>

@@ -66,3 +66,20 @@ export const fetchForecast = async (location: string, days: number = 3) => {
     throw error;
   }
 };
+
+export const fetchCitySuggestions = async (search: string) => {
+  const API_URL = "https://wft-geo-db.p.rapidapi.com/v1/geo/cities";
+  const API_HEADERS = {
+    "X-RapidAPI-Key": import.meta.env.VITE_CITY_API_KEY,
+    "X-RapidAPI-Host": "wft-geo-db.p.rapidapi.com"
+  };
+  try {
+    const response = await fetch(`${API_URL}?namePrefix=${encodeURIComponent(search.trim())}&limit=7&sort=-population`, {
+      headers: API_HEADERS
+    });
+    const data = await response.json();
+    return data.data?.map((city: any) => `${city.city}, ${city.country}`) || [];
+  } catch (err) {
+    return [];
+  }
+};
